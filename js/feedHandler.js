@@ -1,14 +1,91 @@
-
 let posts = [];
 
-$(document).ready(function () {
-    $.get("https://localhost:4567/postagem", function (data) {
-        processData(data);
-    });
+let postCount = 0;
+let numberOfPages = 1;
+let paginateBy = 5;
+let currentPage = 1;
+let firstPostIndex = 0;
+let numberOfPostOnPage = 0;
 
+let isPaginationOpen = false;
+
+$(document).ready(function () {
+    createFeed();
     $('#create-post').on('click', createPost);
     $('#search-button').on('click', searchTopic);
+    
+    $('#menu-button').on('click', openPaginationOption);
+    $('.pagination-option').on('click', onPaginationChanged);
+
+    $('#previous').on('click', moveToPreviousPage);
+    $('#next').on('click', moveToNextPage);
 });
+
+function moveToPreviousPage() {
+    if(currentPage > 1) {
+        currentPage--;
+        firstPostIndex -= paginateBy;
+        createFeed();
+    }
+}
+
+function moveToNextPage() {
+    if(currentPage < numberOfPages) {
+        currentPage++;
+        firstPostIndex += paginateBy;
+        createFeed();
+    }
+}
+
+function createFeed() {
+    $.get("https://localhost:4567/postagem", function (data) {
+        postCount = data.length;
+        clearFeed();
+        paginateContent();
+    });
+}
+
+function paginateContent() {
+    $.get(`https://localhost:4567/postagem?start=${firstPostIndex}&limit=${paginateBy}`, function (data) {
+        numberOfPages = Math.ceil(postCount / paginateBy);
+        numberOfPostOnPage = firstPostIndex + data.length;
+        updatePaginationNav();
+        processData(data);
+    });
+}
+
+function updatePaginationNav() {
+    const pageContainer = $('#pages-container');
+
+    $('#firstItemIndex').html(firstPostIndex + 1);
+    $('#lastItemIndex').html(numberOfPostOnPage);
+    $('#numberOfItems').html(postCount);
+
+    console.log(numberOfPages);
+}
+
+function openPaginationOption() {
+    if(isPaginationOpen) {
+        $('#pagination').addClass('hidden');
+    } else {
+        $('#pagination').removeClass('hidden');
+    }
+
+    isPaginationOpen = !isPaginationOpen;
+}
+
+function onPaginationChanged(obj) {
+    paginateBy = obj.currentTarget.tabIndex;
+    currentPage = 1;
+    firstPostIndex = 0;
+    numberOfPostOnPage = 0;
+    
+    createFeed();
+
+    $('#pagination').addClass('hidden');
+    $('#paginateBy').html(paginateBy);
+    isPaginationOpen = false;
+}
 
 function searchTopic() {
     const search = $('#search').val();
@@ -16,16 +93,20 @@ function searchTopic() {
     if (!search) {
         location.reload(true);
     } else {
-        $("#feed-container").empty();
+        clearFeed();
         $.get(`https://localhost:4567/postagem?title=${search}`, function (data) {
-            posts = [];
             processData(data);
         });
     }
 }
 
+function clearFeed() {
+    $("#feed-container").empty();
+    posts = [];
+}
 
 function processData(data) {
+
     data.forEach(element => {
         var post = new Post(element.id, element.title, element.content, element.categories, element.version);
         posts.push(post);
