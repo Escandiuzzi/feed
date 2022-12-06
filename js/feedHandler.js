@@ -47,16 +47,18 @@ function createFeed() {
 
 function paginateContent() {
     $.get(`https://localhost:4567/postagem?start=${firstPostIndex}&limit=${paginateBy}`, function (data) {
-        numberOfPages = Math.ceil(postCount / paginateBy);
-        numberOfPostOnPage = firstPostIndex + data.length;
-        updatePaginationNav();
+        updatePagination(data);
         processData(data);
     });
 }
 
-function updatePaginationNav() {
-    const pageContainer = $('#pages-container');
+function updatePagination(data) {
+    numberOfPages = Math.ceil(postCount / paginateBy);
+    numberOfPostOnPage = firstPostIndex + data.length;
+    updatePaginationNav();
+}
 
+function updatePaginationNav() {
     $('#firstItemIndex').html(firstPostIndex + 1);
     $('#lastItemIndex').html(numberOfPostOnPage);
     $('#numberOfItems').html(postCount);
@@ -95,6 +97,8 @@ function searchTopic() {
     } else {
         clearFeed();
         $.get(`https://localhost:4567/postagem?title=${search}`, function (data) {
+            postCount = data.length;
+            updatePagination(data);
             processData(data);
         });
     }
