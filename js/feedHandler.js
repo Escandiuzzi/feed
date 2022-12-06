@@ -97,8 +97,8 @@ function searchTopic() {
     } else {
         clearFeed();
         $.get(`https://localhost:4567/postagem?title=${search}`, function (data) {
-            postCount = data.length;
-            updatePagination(data);
+            $('#pagination-footer').addClass('hidden');
+            $('#pagination-selector').addClass('hidden');
             processData(data);
         });
     }
@@ -144,11 +144,12 @@ function createFeedPosts() {
         element.categories.forEach(category => postHashtags.innerHTML += category + " ");
 
         const actionButtonsWrapper = document.createElement('div');
-        actionButtonsWrapper.classList.add('mt-2', 'mb-4', 'float-right');
+        actionButtonsWrapper.classList.add('flex', 'justify-between', 'w-full', 'mt-6', 'mb-4', 'float-right');
 
         const deletePostButton = document.createElement('button');
         deletePostButton.setAttribute('id', 'delete-button-' + element.id);
         deletePostButton.dataset.row = element.id;
+        deletePostButton.classList.add('ml-2');
 
         const deleteButtonIcon = document.createElement('i');
         deleteButtonIcon.classList.add('fa', 'fa-trash');
@@ -156,15 +157,14 @@ function createFeedPosts() {
 
         const editPostButton = document.createElement('button');
         editPostButton.setAttribute('id', 'edit-button-' + element.id);
-        editPostButton.classList.add('ml-2');
 
         const editButtonIcon = document.createElement('i');
         editButtonIcon.classList.add('fa-regular', 'fa-pen-to-square');
         editPostButton.appendChild(editButtonIcon);
         editPostButton.dataset.row = element.id;
 
-        actionButtonsWrapper.appendChild(deletePostButton);
         actionButtonsWrapper.appendChild(editPostButton);
+        actionButtonsWrapper.appendChild(deletePostButton);
 
         postWrapper.appendChild(postTitle);
         postWrapper.appendChild(postContent);
